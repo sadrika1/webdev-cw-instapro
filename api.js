@@ -15,11 +15,20 @@ export function getPosts({ token }) {
       if (response.status === 401) {
         throw new Error("Нет авторизации");
       }
-
       return response.json();
     })
     .then((data) => {
-      return data.posts;
+      return data.posts.map((post) => {
+        return {
+          name: post.user?.name,
+          description: post.description, 
+          time: post.createdAt,
+          postImg: post.imageUrl,
+          userImg: post.user?.imageUrl,
+          like: post.likes,
+          //isLiked: false,
+        }       
+      })
     });
 }
 
@@ -68,3 +77,5 @@ export function uploadImage({ file }) {
     return response.json();
   });
 }
+
+
