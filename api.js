@@ -21,14 +21,14 @@ export function getPosts({ token }) {
       return data.posts.map((post) => {
         return {
           name: post.user?.name,
-          description: post.description, 
+          description: post.description,
           time: post.createdAt,
           postImg: post.imageUrl,
           userImg: post.user?.imageUrl,
           like: post.likes,
           //isLiked: false,
-        }       
-      })
+        };
+      });
     });
 }
 
@@ -78,4 +78,20 @@ export function uploadImage({ file }) {
   });
 }
 
-
+export function addPost({ token, description, imageUrl }) {
+  return fetch(postsHost, {
+    method: "POST",
+    body: JSON.stringify({
+      description,
+      imageUrl,
+    headers: {
+        Authorization: token,
+      },
+    }),
+  }).then((response) => {
+    if(response.status === 400) {
+      throw new Error ('Добавьте описание и прикрепите картинку')
+    }
+    return response.json();
+  })
+}
