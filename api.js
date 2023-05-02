@@ -1,6 +1,6 @@
 // Замени на свой, чтобы получить независимый от других набор данных.
 // "боевая" версия инстапро лежит в ключе prod
-const personalKey = "prod";
+const personalKey = "ARI";
 const baseHost = "https://webdev-hw-api.vercel.app";
 const postsHost = `${baseHost}/api/v1/${personalKey}/instapro`;
 
@@ -25,7 +25,8 @@ export function getPosts({ token }) {
           time: post.createdAt,
           postImg: post.imageUrl,
           userImg: post.user?.imageUrl,
-          like: post.likes,
+          id: post.user.id
+          // like: post.likes,
           //isLiked: false,
         };
       });
@@ -81,12 +82,12 @@ export function uploadImage({ file }) {
 export function addPost({ token, description, imageUrl }) {
   return fetch(postsHost, {
     method: "POST",
+    headers: {
+      Authorization: token,
+    },
     body: JSON.stringify({
       description,
       imageUrl,
-    headers: {
-        Authorization: token,
-      },
     }),
   }).then((response) => {
     if(response.status === 400) {
@@ -94,4 +95,30 @@ export function addPost({ token, description, imageUrl }) {
     }
     return response.json();
   })
-}
+};
+
+export function getUserPosts(userId) {
+  return fetch(postsHost + "/user-posts/" + userId, {
+    method: "GET",
+  })
+    .then((response) => {
+      if (response.status === 401) {
+        throw new Error("Нет авторизации");
+      }
+
+      return response.json();
+    })
+    .then((data) => {
+      return data.posts.map((post) => {
+        return {
+          name: post?.user?.name,
+          description: post.description,
+          time: post.createdAt,
+          postImg: post.imageUrl,
+          userImg: post?.user?.imageUrl,
+          id: post.user?.id
+        }
+      });
+    });
+  };
+

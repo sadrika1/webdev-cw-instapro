@@ -26,9 +26,9 @@ export function renderAddPostPageComponent({ appEl, onAddPostClick }) {
     </div>`;
 
     appEl.innerHTML = appHtml;
-    renderHeaderComponent({
-      element: document.querySelector(".header-container"),
-    });
+    // renderHeaderComponent({
+    //   element: document.querySelector(".header-container"),
+    // });
 
     const uploadImageContainer = appEl.querySelector(".upload-image-container");
     const descriptionEl = document.getElementById("description-input");
