@@ -25,9 +25,11 @@ export function getPosts({ token }) {
           time: post.createdAt,
           postImg: post.imageUrl,
           userImg: post.user?.imageUrl,
-          id: post.user.id
-          // like: post.likes,
-          //isLiked: false,
+          id: post.user.id,
+          idPost: post.id,
+          isLiked: post.isLiked,
+          likes: post.likes.length,
+          whoseLike: post.likes[0]?.name,
         };
       });
     });
@@ -97,9 +99,12 @@ export function addPost({ token, description, imageUrl }) {
   })
 };
 
-export function getUserPosts(userId) {
+export function getUserPosts(userId, token) {
   return fetch(postsHost + "/user-posts/" + userId, {
     method: "GET",
+    headers: {
+      Authorization: token,
+    },
   })
     .then((response) => {
       if (response.status === 401) {
@@ -116,9 +121,37 @@ export function getUserPosts(userId) {
           time: post.createdAt,
           postImg: post.imageUrl,
           userImg: post?.user?.imageUrl,
-          id: post.user?.id
+          id: post.user?.id,
+          idPost: post.idPost,
+          isLiked: post.isLiked,
+          likes: post.likes.length,
+          whoseLike: post?.likes[0]?.name,
         }
       });
     });
   };
+
+  export function addLike({ token, idPost }) {
+    return fetch(postsHost + "/" + idPost + "/like", {
+      method: "POST",
+      headers: {
+        Authorization: token,
+      },
+      body: JSON.stringify({
+        idPost,
+      }),
+    })
+  };
+  
+  export function addDislike({ token, idPost }) {
+    return fetch(postsHost + "/" + idPost + "/dislike", {
+      method: "POST",
+      headers: {
+        Authorization: token,
+      },
+      body: JSON.stringify({
+        idPost,
+      }),
+     })
+  }
 

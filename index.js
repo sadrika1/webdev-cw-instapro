@@ -1,4 +1,4 @@
-import { getPosts, addPost, getUserPosts } from "./api.js";
+import { getPosts, addPost, getUserPosts, addLike, addDislike } from "./api.js";
 import { renderAddPostPageComponent } from "./components/add-post-page-component.js";
 import { renderAuthPageComponent } from "./components/auth-page-component.js";
 import {
@@ -56,7 +56,7 @@ export const goToPage = (newPage, data) => {
       page = LOADING_PAGE;
       renderApp();
 
-      return getPosts({ token: getToken() })
+      return getPosts({ token: getToken(),})
         .then((newPosts) => {
           page = POSTS_PAGE;
           posts = newPosts;
@@ -73,14 +73,13 @@ export const goToPage = (newPage, data) => {
       console.log("Открываю страницу пользователя: ", data.userId);
       page = LOADING_PAGE;
       renderApp();
-     
-      let userId = data.userId
-      return getUserPosts(userId)
-      .then((newPosts) => {
+
+      let userId = data.userId;
+      return getUserPosts(userId).then((newPosts) => {
         page = USER_POSTS_PAGE;
         posts = newPosts;
         renderApp();
-      })
+      });
     }
 
     page = newPage;
@@ -89,6 +88,7 @@ export const goToPage = (newPage, data) => {
     return;
   }
 
+  likeEventListener();
   throw new Error("страницы не существует");
 };
 
@@ -126,7 +126,7 @@ const renderApp = () => {
           token: getToken(),
         }).then(() => {
           goToPage(POSTS_PAGE);
-        })
+        });
         //console.log("Добавляю пост...", { description, imageUrl });
       },
     });
@@ -143,6 +143,64 @@ const renderApp = () => {
       appEl,
     });
   }
+  likeEventListener();
+};
+
+export const likeEventListener = () => {
+  const likeButtonElements = document.querySelectorAll(".like-button");
+  for (const likeButtonElement of likeButtonElements) {
+    //const idPost = likeButtonElement.dataset.idPost;
+    const index = +(likeButtonElement.dataset.index);
+    
+    likeButtonElement.addEventListener("click", () => {
+      let userId = posts[index].id;
+      let idPost = posts[index].idPost;
+      if (!user) {
+        alert("Лайки могут ставить только авторизованные пользователи.")
+        return;
+    }
+
+      if (posts[index].isLiked === true) {
+        addDislike({idPost, token: getToken() })
+        .then(() => {
+          if (page === POSTS_PAGE) {
+            return getPosts({ token: getToken() })
+            .then((newPosts) => {
+              page = POSTS_PAGE;
+              posts = newPosts;
+              renderApp();
+            });
+          } else {
+            return getUserPosts({userId, token: getToken()})
+            .then((newPosts) => {
+                page = USER_POSTS_PAGE;
+                posts = newPosts;
+                renderApp();
+              });
+          }
+        });
+      } else {
+        addLike({ idPost, token: getToken() }).then(() => {
+          if (page === POSTS_PAGE) {
+            return getPosts({token: getToken()})
+            .then((newPosts) => {
+              page = POSTS_PAGE;
+              posts = newPosts;
+              renderApp();
+            });
+          } else {
+            return getUserPosts({userId, token: getToken()})
+            .then((newPosts) => {
+                page = USER_POSTS_PAGE;
+                posts = newPosts;
+                renderApp();
+              });
+          }
+        });
+      }
+    });
+  }
 };
 
 goToPage(POSTS_PAGE);
+likeEventListener();
